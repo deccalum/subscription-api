@@ -1,242 +1,78 @@
-![Lexicon Logo](https://lexicongruppen.se/media/wi5hphtd/lexicon-logo.svg)
-
-# ProjectTest – Subscription Platform
-
-**Project Type:** Backend REST API (Spring Boot + JPA)
-
-## Overview
-
-You will extend and complete an existing backend project for a **Subscription Management Platform**.  
-The system allows service providers to offer subscription plans, while customers can browse plans and manage their
-subscriptions.
-
-Your implementation must follow the functional and technical requirements described below.
-
----
-
-## Scenario
-
-You are building a backend for a **subscription management platform** used by multiple service providers (**operators**).
-
-Operators offer subscription plans in two categories:
-
-### Internet Services
-
-- Fiber 50
-- Fiber 100
-- Fiber 300
-
-### Mobile Services
-
-- Mobile Basic
-- Mobile Plus
-- Mobile Unlimited
-
-Each operator maintains its own catalog of plans.
-
-Each plan contains:
-
-- Name
-- Price
-- Service type (Internet or Mobile)
-- Optional data limit
-- Active/Inactive status
-
-Customers can:
-
-- Register and manage their profile
-- Browse operators and active plans
-- Subscribe to plans
-- Change plans
-- Cancel subscriptions
-
----
-
-## Business Rules
-
-- A customer may have **at most one active subscription per service type**:
-    - One Internet subscription
-    - One Mobile subscription
-
-- A subscription is created with status **ACTIVE**
-- Cancelled subscriptions must store a cancellation date
-- Only **active plans** are visible and subscribable
-- Plan changes are allowed **only within the same operator and same service type**
-
-Violations of these rules must result in meaningful custom exceptions.
-
----
-
-## Actors
-
-| Actor        | Responsibilities                          |
-|--------------|-------------------------------------------|
-| **Admin**    | Create and manage operators and plans     |
-| **Customer** | Browse plans and manage own subscriptions |
-
----
-
-### Domain Analysis
-
-```mermaid
-erDiagram
-    CUSTOMER ||--o{ SUBSCRIPTION: has
-    PLAN ||--o{ SUBSCRIPTION: used_by
-    OPERATOR ||--o{ PLAN: offers
-    CUSTOMER ||--|| CUSTOMER_DETAIL: has
-```
-## Entity Requirements
-
-- Define JPA relationships and ownership
-- Add required fields to `Plan` and `Subscription`
-- Use enums where applicable (service type, subscription status)
-- Enable auditing (`createdAt`, `updatedAt`)
-- Add constraints (unique, not null, length, etc.)
-
----
-
-## Service Layer
-
-- Implement services for all domain operations
-- Use `@Transactional` on write operations
-- Enforce business rules inside services
-- Throw custom exceptions for invalid operations
-
----
-
-## DTOs, Mapping & Validation
-
-- Use DTOs (records recommended)
-- Do **not** expose entities in controllers
-- Use validation annotations (`@NotNull`, `@NotBlank`, etc.)
-- Convert between Entity and DTO using MapStruct or manual mappers
-
----
-
-## REST API & Security
-
-- Controllers for **Plan** and **Subscription**
-- Role-based access:
-  - ADMIN → manage operators & plans
-  - CUSTOMER → manage own subscriptions
-- Return correct HTTP status codes
-- Global exception handling
-- (Optional) Swagger annotations
-
-### Required API Functionality
-
-Expose endpoints that support the following operations.
-
-#### Plan API
-
-**ADMIN must be able to:**
-- Create a plan
-- Update a plan
-- Delete a plan
-- View all plans (active and inactive)
-
-**CUSTOMER must be able to:**
-- View all active plans
-- View active plans by service type (Internet / Mobile)
-- View plans belonging to a specific operator
-
----
-
-#### Subscription API
-
-**CUSTOMER must be able to:**
-- Subscribe to a plan
-- View their own subscriptions
-- Change subscription plan
-- Cancel subscription
-
-The API must enforce the business rules defined in this document (for example: one active subscription per service type).
-
----
-
-
-## Seed Data
-
-Initialize:
-
-- At least 2 operators
-- Multiple plans per operator
-- Both active and inactive plans
-
----
-
-## (Optional) Testing
-
-- Unit tests for repositories
-- Unit tests for services
-- Controller tests
-
----
-
-## ✅ Submission Checklist
-
-- GitHub repository link
-- `pom.xml` contains required dependencies
-- Entities and relationships implemented
-- Services, transactions, and exceptions
-- DTOs and validation
-- Swagger UI accessible
-- README with run instructions
-- Seed data included
-
----
-
-## Technical Stack & Requirements
-
-### Technologies Used
-
-* **Java 25**
-* **Spring Boot 4.x**
-* **Spring Data JPA** (Hibernate)
-* **Spring Security** (JWT Authentication)
-* **MySQL 8.0** (Database)
-* **Redis** (Token Blacklisting)
-* **MapStruct** (Object Mapping)
-* **Lombok** (Boilerplate reduction)
-* **Swagger/OpenAPI 3** (API Documentation)
-* **Maven** (Build Tool)
-* **Docker & Docker Compose** (Infrastructure)
-
-### Prerequisites
-
-Before running the application, ensure you have the following installed:
-
-* [JDK 25](https://www.oracle.com/java/technologies/downloads/)
-* [Maven](https://maven.apache.org/download.cgi)
-* [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-
----
-
-## Getting Started
-
-### 1. Infrastructure Setup (Database & Redis)
-
-The project uses Docker Compose to manage the MySQL database and Redis server.
-
-Run the following command in the project root:
-
-```bash
-docker-compose up -d
+## CHANGES AND ADDITIONS
+
+### ValidationMessages
+Kept in one layer (dto) and simplified with `ValidationMessages.properties`.
+
+#### In DTO
+```java
+public record CustomerDetailRequest(
+        @NotBlank(message = "{blank}") 
+        String address,
+
+        @NotBlank(message = "{blank}") 
+        @Pattern(regexp = "^\\+?[0-9\\s-]{7,20}$", message = "{invalidNumber}")
+        String phoneNumber,
+        
+        String preferences
+) {}
 ```
 
-* **MySQL:** Port `3307`
-* **Redis:** Port `6379`
-
-### 2. Run the Application
-
-Navigate to the `subscription-api` directory and run:
-
-```bash
-mvn spring-boot:run
+#### In console
+```
+2026-03-17T10:21:03.248+01:00  WARN 45552 --- [subscription-api] [nio-8080-exec-6] s.l.s.exception.GlobalExceptionHandler   : Validation failed:
+ - password: Invalid length
+ - email: Invalid email format
+ - firstName: Field cannot be blank
 ```
 
-### 3. API Documentation
+### Logging
+customized application.properties
 
-Once the app is running, access the Swagger UI at:
-`http://localhost:8080/swagger-ui.html`
+### Database
+Switched to postgres. Added cloudbeaver to docker-compose for db review.
+
+### Abstract Classes
+Plan -> Plans
+User -> Users
+
+### Renamings
+Customer -> User
+
+### Notes
+
+Mapstruct issues...
+
+### ADDITIONS
+
+#### Change Request
+Added a queued change-request workflow for operator-initiated admin actions:
+- Operator can submit admin-level create/update/delete style actions as requests.
+- Changes are not persisted until admin approval.
+- Admin can review queued requests and approve/deny.
+- Request model now tracks status (pending/approved/rejected), timestamps, operator reference, and request details.
+
+### TODO
+
+#### ip related
+admin local-only login policy (larger security overhaul):
+- restrict admin authentication to allowlisted local/private networks (dev) or dedicated bastion/vpn (prod)
+- add explicit deny + audit log for admin login attempts outside policy
+- add login event table with timestamp, ip, user-agent, outcome, reason
+
+user identity strategy:
+- keep numeric db primary key as internal id
+- add immutable public id (string) for display/search, e.g. A-000123, O-000456, U-000789
+- generate public id in service layer after persistence (or via db sequence + formatter), never replace PK
+
+future user model refactor:
+- evaluate single-table inheritance for user types: BaseUser + AdminUser/OperatorUser/EndUser
+- move subscriptions relation only to EndUser subtype if role-specific fields diverge further
+- keep current single User + roles approach if differences remain mostly authorization-related
+
+#### Admin Login IP Restriction
+To restrict admin logins to "local" networks (e.g., localhost or internal VPN):
+You should capture the IP address during authentication in your Spring Security configuration.
+*   **Implementation Idea**: Extract the IP from `HttpServletRequest.getRemoteAddr()` (or `X-Forwarded-For` header if behind a proxy like CloudBeaver/Docker) inside your JWT Auth Filter or Login Controller. 
+*   **Validation**: If the fetched user has `ROLE_ADMIN` and the IP is not `127.0.0.1`, `0:0:0:0:0:0:0:1`, or your local subnet, throw an `AccessDeniedException`.
+*   **IP Logging**: Add a `last_login_ip` and `last_login_instant` column to the `User` class to track this for security audits.
 

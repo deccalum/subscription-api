@@ -16,7 +16,7 @@ public record SubscriptionRequest(
 
         @NotNull(message = "{required}") 
         @Positive(message = "{invalidId}") 
-        Long customerId,
+        Long userId,
 
         @NotNull(message = "{required}") 
         SubscriptionStatus status
