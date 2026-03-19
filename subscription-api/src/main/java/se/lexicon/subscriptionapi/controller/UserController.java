@@ -10,75 +10,74 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import se.lexicon.subscriptionapi.dto.request.CustomerDetailRequest;
-import se.lexicon.subscriptionapi.dto.request.CustomerRequest;
-import se.lexicon.subscriptionapi.dto.response.CustomerResponse;
-import se.lexicon.subscriptionapi.service.CustomerService;
+import se.lexicon.subscriptionapi.dto.request.UserRequest;
+import se.lexicon.subscriptionapi.dto.response.UserResponse;
+import se.lexicon.subscriptionapi.service.UserService;
 
 import java.util.List;
 
-@Tag(name = "Customers", description = "Customer endpoints (public register; other endpoints require JWT).")
+@Tag(name = "Users", description = "User endpoints (public register; other endpoints require JWT).")
 @RestController
-@RequestMapping("/api/v1/customers")
+@RequestMapping("/api/v1/Users")
 @RequiredArgsConstructor
-public class CustomerController {
+public class UserController {
 
-    private final CustomerService customerService;
+    private final UserService UserService;
 
     @PostMapping
     @SecurityRequirements // Public (no auth)
     @Operation(
-            summary = "Register a new customer",
-            description = "Public endpoint. Creates a customer account.\n\nRoles: Public"
+            summary = "Register a new User",
+            description = "Public endpoint. Creates a User account.\n\nRoles: Public"
     )
-    public ResponseEntity<CustomerResponse> register(@Valid @RequestBody CustomerRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(customerService.create(request));
+    public ResponseEntity<UserResponse> register(@Valid @RequestBody UserRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(UserService.create(request));
     }
 
     @GetMapping("/{id}")
     @Operation(
-            summary = "Get customer by ID",
+            summary = "Get User by ID",
             description = "Requires JWT.\n\nRoles: USER, ADMIN",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<CustomerResponse> read(@PathVariable Long id) {
-        return ResponseEntity.ok(customerService.read(id));
+    public ResponseEntity<UserResponse> read(@PathVariable Long id) {
+        return ResponseEntity.ok(UserService.read(id));
     }
 
     @GetMapping("/email/{email}")
     @Operation(
-            summary = "Get customer by email",
+            summary = "Get User by email",
             description = "Requires JWT.\n\nRoles: USER, ADMIN",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<CustomerResponse> getEmail(@PathVariable String email) {
-        return ResponseEntity.ok(customerService.getEmail(email));
+    public ResponseEntity<UserResponse> getEmail(@PathVariable String email) {
+        return ResponseEntity.ok(UserService.getEmail(email));
     }
 
     @GetMapping
     @Operation(
-            summary = "Get all customers",
+            summary = "Get all Users",
             description = "Requires JWT.\n\nRoles: USER, ADMIN",
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<List<CustomerResponse>> getAll() {
-        return ResponseEntity.ok(customerService.getAll());
+    public ResponseEntity<List<UserResponse>> getAll() {
+        return ResponseEntity.ok(UserService.getAll());
     }
 
     // @PutMapping("/{id}/profile")
     // @Operation(
-    //         summary = "Update customer profile",
+    //         summary = "Update User profile",
     //         description = "Requires JWT.\n\nRoles: USER, ADMIN",
     //         security = @SecurityRequirement(name = "bearerAuth")
     // )
     
     // @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    // public ResponseEntity<CustomerResponse> updateProfile(
+    // public ResponseEntity<UserResponse> updateProfile(
     //         @PathVariable Long id,
-    //         @Valid @RequestBody CustomerRequest detailRequest) {
-    //     return ResponseEntity.ok(customerService.update(id, detailRequest));
+    //         @Valid @RequestBody UserRequest detailRequest) {
+    //     return ResponseEntity.ok(UserService.update(id, detailRequest));
     // }
 }

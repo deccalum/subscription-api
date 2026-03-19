@@ -1,11 +1,14 @@
 package se.lexicon.subscriptionapi.dto.request;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
+import lombok.ToString;
+import se.lexicon.subscriptionapi.domain.constant.UserCredentials;
 
-public record CustomerRequest(
+public record UserRequest(
         Long id,
+
+        @NotNull(message = "{blank}")
+        UserCredentials credentials,
 
         @NotBlank(message = "{blank}") 
         @Email(message = "{invalidEmail}")
@@ -22,5 +25,15 @@ public record CustomerRequest(
 
         @NotBlank(message = "{blank}") 
         @Size(min = 8, message = "{invalidLength}") 
-        String password
+        @ToString.Exclude
+        String password,
+
+        @NotBlank(message = "{blank}") 
+        String address,
+
+        @NotBlank(message = "{blank}") 
+        @Pattern(regexp = "^\\+?[0-9\\s-]{7,20}$", message = "{invalidNumber}")
+        String phoneNumber,
+        
+        String preferences
 ) {}

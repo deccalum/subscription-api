@@ -13,10 +13,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import se.lexicon.subscriptionapi.dto.request.CustomerRequest;
+import se.lexicon.subscriptionapi.dto.request.UserRequest;
 import se.lexicon.subscriptionapi.dto.request.LoginRequest;
 import se.lexicon.subscriptionapi.security.JwtTokenProvider;
-import se.lexicon.subscriptionapi.service.CustomerService;
+import se.lexicon.subscriptionapi.service.UserService;
 import se.lexicon.subscriptionapi.security.TokenBlacklistService;
 
 import java.time.Duration;
@@ -34,7 +34,7 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
-    private final CustomerService customerService;
+    private final UserService UserService;
     private final TokenBlacklistService tokenBlacklistService;
 
     @PostMapping("/login")
@@ -63,11 +63,11 @@ public class AuthController {
     @PostMapping("/register")
     @SecurityRequirements // Public (no auth)
     @Operation(
-            summary = "Register customer",
-            description = "Public endpoint. Creates a new customer account.\n\nRoles: Public"
+            summary = "Register User",
+            description = "Public endpoint. Creates a new User account.\n\nRoles: Public"
     )
-    public ResponseEntity<?> register(@Valid @RequestBody CustomerRequest request) {
-        return ResponseEntity.ok(customerService.create(request));
+    public ResponseEntity<?> register(@Valid @RequestBody UserRequest request) {
+        return ResponseEntity.ok(UserService.create(request));
     }
 
     @PostMapping("/logout")
