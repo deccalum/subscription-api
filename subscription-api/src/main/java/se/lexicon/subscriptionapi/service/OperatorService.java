@@ -1,9 +1,8 @@
 package se.lexicon.subscriptionapi.service;
 
+import java.util.List;
 import se.lexicon.subscriptionapi.dto.request.OperatorRequest;
 import se.lexicon.subscriptionapi.dto.response.OperatorResponse;
-
-import java.util.List;
 
 public interface OperatorService {
     OperatorResponse create(OperatorRequest request);

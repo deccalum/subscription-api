@@ -12,13 +12,15 @@ import se.lexicon.subscriptionapi.mapper.RequestMapper;
 import se.lexicon.subscriptionapi.repository.ChangeRequestRepository;
 import se.lexicon.subscriptionapi.repository.UserRepository;
 
-@Service @RequiredArgsConstructor
+@Service
+@RequiredArgsConstructor
 public class ChangeRequestServiceImpl implements ChangeRequestService {
     private final ChangeRequestRepository changeRequestRepository;
     private final UserRepository userRepository;
     private final RequestMapper requestMapper;
 
-    @Override @Transactional
+    @Override
+    @Transactional
     public ChangeRequestResponse submitCreatePlan(CreatePlanChangeRequest dto, String operatorEmail) {
         return Optional.ofNullable(operatorEmail)
                 .map(this::resolveOperator)
@@ -28,7 +30,8 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
                 .orElse(null);
     }
 
-    @Override @Transactional
+    @Override
+    @Transactional
     public ChangeRequestResponse submitUpdatePlan(UpdatePlanChangeRequest dto, String operatorEmail) {
         return Optional.ofNullable(operatorEmail)
                 .map(this::resolveOperator)
@@ -38,7 +41,8 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
                 .orElse(null);
     }
 
-    @Override @Transactional
+    @Override
+    @Transactional
     public ChangeRequestResponse submitDeletePlan(DeletePlanChangeRequest dto, String operatorEmail) {
         return Optional.ofNullable(operatorEmail)
                 .map(this::resolveOperator)
@@ -48,7 +52,8 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
                 .orElse(null);
     }
 
-    @Override @Transactional
+    @Override
+    @Transactional
     public ChangeRequestResponse submitUpdateOperator(UpdateOperatorChangeRequest dto, String operatorEmail) {
         return Optional.ofNullable(operatorEmail)
                 .map(this::resolveOperator)
@@ -58,7 +63,8 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
                 .orElse(null);
     }
 
-    @Override @Transactional
+    @Override
+    @Transactional
     public ChangeRequestResponse submitCreateSubscription(CreateSubscriptionChangeRequest dto, String operatorEmail) {
         return Optional.ofNullable(operatorEmail)
                 .map(this::resolveOperator)
@@ -68,7 +74,8 @@ public class ChangeRequestServiceImpl implements ChangeRequestService {
                 .orElse(null);
     }
 
-    @Override @Transactional(readOnly = true)
+    @Override
+    @Transactional(readOnly = true)
     public List<ChangeRequestResponse> getMyRequests(String operatorEmail) {
         return Optional.ofNullable(operatorEmail)
                 .map(this::resolveOperator)

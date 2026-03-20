@@ -1,7 +1,6 @@
 package se.lexicon.subscriptionapi.service;
 
 import java.util.List;
-
 import se.lexicon.subscriptionapi.domain.constant.SubscriptionStatus;
 import se.lexicon.subscriptionapi.dto.request.SubscriptionRequest;
 import se.lexicon.subscriptionapi.dto.response.SubscriptionResponse;

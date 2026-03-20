@@ -8,19 +8,20 @@ import se.lexicon.subscriptionapi.domain.constant.SubscriptionStatus;
 import se.lexicon.subscriptionapi.dto.request.SubscriptionRequest;
 import se.lexicon.subscriptionapi.dto.response.SubscriptionResponse;
 import se.lexicon.subscriptionapi.mapper.SubscriptionMapper;
-import se.lexicon.subscriptionapi.repository.UserRepository;
 import se.lexicon.subscriptionapi.repository.PlanRepository;
 import se.lexicon.subscriptionapi.repository.SubscriptionRepository;
+import se.lexicon.subscriptionapi.repository.UserRepository;
 
-//no passthrough to dto != errorcheck. fix
-@Service @RequiredArgsConstructor
+@Service
+@RequiredArgsConstructor
 public class SubscriptionServiceImpl implements SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
     private final PlanRepository planRepository;
     private final UserRepository userRepository;
     private final SubscriptionMapper subscriptionMapper;
 
-    @Override @Transactional
+    @Override
+    @Transactional
     public SubscriptionResponse create(SubscriptionRequest request) {
         return planRepository.findById(request.planId())
                 .filter(plan -> plan.getOperator().getId().equals(request.operatorId()))
@@ -30,12 +31,14 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .orElse(null);
     }
 
-    @Override @Transactional
+    @Override
+    @Transactional
     public SubscriptionResponse read(Long id) {
         return subscriptionRepository.findById(id).map(subscriptionMapper::toResponse).orElse(null);
     }
 
-    @Override @Transactional
+    @Override
+    @Transactional
     public SubscriptionResponse update(Long id, SubscriptionRequest request) {
         return subscriptionRepository.findById(id)
                 .map(existing -> {
@@ -47,22 +50,26 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                 .orElse(null);
     }
 
-    @Override @Transactional
+    @Override
+    @Transactional
     public void delete(Long id) {
-        subscriptionRepository.deleteById(id); 
+        subscriptionRepository.deleteById(id);
     }
 
-    @Override @Transactional
+    @Override
+    @Transactional
     public List<SubscriptionResponse> getAll() {
         return subscriptionRepository.findAll().stream().map(subscriptionMapper::toResponse).toList();
     }
 
-    @Override @Transactional
+    @Override
+    @Transactional
     public List<SubscriptionResponse> getUserId(Long userId) {
         return subscriptionRepository.findByUserId(userId).stream().map(subscriptionMapper::toResponse).toList();
     }
 
-    @Override @Transactional
+    @Override
+    @Transactional
     public List<SubscriptionResponse> getStatus(SubscriptionStatus status) {
         return subscriptionRepository.findByStatus(status).stream().map(subscriptionMapper::toResponse).toList();
     }
