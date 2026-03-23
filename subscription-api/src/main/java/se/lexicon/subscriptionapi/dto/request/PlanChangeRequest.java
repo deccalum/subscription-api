@@ -2,40 +2,43 @@ package se.lexicon.subscriptionapi.dto.request;
 
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Digits;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
+import java.util.List;
+import org.hibernate.validator.constraints.Range;
+import se.lexicon.subscriptionapi.domain.constant.ActionType;
 import se.lexicon.subscriptionapi.domain.constant.NetworkGeneration;
 import se.lexicon.subscriptionapi.domain.constant.PlanKind;
 import se.lexicon.subscriptionapi.domain.constant.PlanStatus;
+import se.lexicon.subscriptionapi.validation.CountryCode;
 
-public record CreatePlanChangeRequest(
-        @NotNull(message = "{required}") PlanKind kind,
+public record PlanChangeRequest(
+        @NotNull ActionType action,
 
-        @NotBlank(message = "{blank}") String name,
+        @Positive(message = "{invalidId}") Long planId,
 
-        @NotNull(message = "{required}") @Positive(message = "{positive}") @Digits(integer = 10, fraction = 2, message = "{digits}") BigDecimal price,
+        PlanKind kind,
 
-        @NotNull(message = "{required}") PlanStatus status,
-
-        @Positive @Digits(integer = 5, fraction = 0, message = "{digits}") Integer uploadSpeedMbps,
-
-        @Positive @Digits(integer = 5, fraction = 0, message = "{digits}") Integer downloadSpeedMbps,
-
+        @Size(max = 200, message = "{invalidLength}") String name,
+        @Positive(message = "{positive}") @Digits(integer = 10, fraction = 2, message = "{digits}") BigDecimal price,
+        PlanStatus status,
+        @Positive(message = "{positive}") Integer uploadSpeedMbps,
+        @Positive(message = "{positive}") Integer downloadSpeedMbps,
         NetworkGeneration networkGeneration,
-
-        @Positive @Digits(integer = 5, fraction = 2, message = "{digits}") Integer dataLimitGb,
-
-        @Positive @Digits(integer = 8, fraction = 4, message = "{digits}") BigDecimal callCostPerMinute,
-
-        @Positive @Digits(integer = 8, fraction = 4, message = "{digits}") BigDecimal smsCostPerMessage
+        @Positive(message = "{positive}") Integer dataLimitGb,
+        @Positive(message = "{positive}") @Digits(integer = 8, fraction = 4, message = "{digits}") BigDecimal callCostPerMinute,
+        @Positive(message = "{positive}") @Digits(integer = 8, fraction = 4, message = "{digits}") BigDecimal smsCostPerMessage,
+        List<CountryCode> coverage,
+        @Range(min = 100, max = 10000, message = "{range}") Integer MHz
 ) {
     @AssertTrue(message = "{invalidPlanPayload}")
     public boolean isPlanPayloadValidForKind() {
-        if (kind == null)
+        if (action == null || action == ActionType.DELETE)
             return true;
-
+        if (kind == null)
+            return false;
         return switch (kind) {
             case INTERNET ->
                 uploadSpeedMbps != null&& downloadSpeedMbps != null&& networkGeneration == null&& dataLimitGb == null&& callCostPerMinute == null&& smsCostPerMessage == null;

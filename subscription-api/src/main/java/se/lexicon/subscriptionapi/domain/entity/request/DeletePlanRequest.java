@@ -4,10 +4,11 @@ import jakarta.persistence.*;
 import lombok.*;
 import se.lexicon.subscriptionapi.domain.entity.ChangeRequest;
 
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @Entity
-@DiscriminatorValue("DELETE_PLAN")
+@DiscriminatorValue("DELETE")
 public class DeletePlanRequest extends ChangeRequest {
 
     private Long targetPlanId;

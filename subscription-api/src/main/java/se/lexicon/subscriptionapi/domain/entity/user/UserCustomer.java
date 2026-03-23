@@ -6,17 +6,12 @@ import lombok.*;
 import se.lexicon.subscriptionapi.domain.entity.Subscription;
 import se.lexicon.subscriptionapi.domain.entity.User;
 
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 @Entity
 @DiscriminatorValue("CUSTOMER")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class UserCustomer extends User {
-    // extend id somehow
-    // @Override
-    // public Long id
-
+    
     @Column
     private String address;
 

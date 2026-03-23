@@ -25,7 +25,7 @@ public class SwaggerConfig {
                 .info(new Info()
                         .title("Subscription API")
                         .version("1.0.0")
-                        .license(new License().name("Apache 2.0").url("http://springdoc.org")))
+                        .license(new License().name("Apache 2.0").url("https://springdoc.org")))
                 .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
                 .components(new Components()
                         .addSecuritySchemes(SECURITY_SCHEME_NAME,

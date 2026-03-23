@@ -26,7 +26,8 @@ public class AdminController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "{api.admin.getByStatus.summary}", description = "{api.admin.getByStatus.description}", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<List<ChangeRequestResponse>> getByStatus(@RequestParam(defaultValue = "PENDING") RequestStatus status) {
+    public ResponseEntity<List<ChangeRequestResponse>> getByStatus(
+            @RequestParam(defaultValue = "PENDING") RequestStatus status) {
         return ResponseEntity.ok(administrationService.getByStatus(status));
     }
 
@@ -40,7 +41,8 @@ public class AdminController {
     @PostMapping("/{id}/reject")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "{api.admin.reject.summary}", description = "{api.admin.reject.description}", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<ChangeRequestResponse> rejectRequest(@PathVariable Long id, @Valid @RequestBody RejectChangeRequest body, Authentication authentication) {
+    public ResponseEntity<ChangeRequestResponse> rejectRequest(@PathVariable Long id,
+            @Valid @RequestBody RejectChangeRequest body, Authentication authentication) {
         return ResponseEntity.ok(administrationService.rejectRequest(id, body.reason(), authentication.getName()));
     }
 }

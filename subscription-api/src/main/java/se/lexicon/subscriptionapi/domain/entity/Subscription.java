@@ -6,12 +6,16 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import se.lexicon.subscriptionapi.domain.constant.SubscriptionStatus;
 
-
-@Getter @Setter
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "subscriptions")
 public class Subscription {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

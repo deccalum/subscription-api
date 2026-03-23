@@ -11,11 +11,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import se.lexicon.subscriptionapi.domain.constant.ActionType;
 import se.lexicon.subscriptionapi.dto.request.*;
 import se.lexicon.subscriptionapi.dto.response.ChangeRequestResponse;
 import se.lexicon.subscriptionapi.dto.response.OperatorResponse;
-import se.lexicon.subscriptionapi.service.ChangeRequestService;
 import se.lexicon.subscriptionapi.service.OperatorService;
+import se.lexicon.subscriptionapi.service.RequestService;
 
 @Tag(name = "Operators", description = "Operator management endpoints.")
 @RestController
@@ -24,25 +25,23 @@ import se.lexicon.subscriptionapi.service.OperatorService;
 @SecurityRequirement(name = "bearerAuth")
 public class OperatorController {
     private final OperatorService operatorService;
-    private final ChangeRequestService changeRequestService;
+    private final RequestService requestService;
 
     @PostMapping("/requests/plans")
     @PreAuthorize("hasRole('OPERATOR')")
-    @Operation(
-            summary = "{api.operator.submitCreatePlan.summary}",
-            description = "{api.operator.submitCreatePlan.description}",
-            security = @SecurityRequirement(name = "bearerAuth")
-    )
-    public ResponseEntity<ChangeRequestResponse>
-    submitCreatePlan(@Valid @RequestBody CreatePlanChangeRequest dto, Authentication auth) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(changeRequestService.submitCreatePlan(dto, auth.getName()));
+    @Operation(summary = "{api.operator.submitCreatePlan.summary}", description = "{api.operator.submitCreatePlan.description}", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<ChangeRequestResponse> submitCreatePlan(@Valid @RequestBody PlanChangeRequest dto,
+            Authentication auth) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(requestService.submitPlan(dto, auth.getName()));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "{api.operator.create.summary}", description = "{api.operator.create.description}", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<OperatorResponse> create(@Valid @RequestBody OperatorRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(operatorService.create(request));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(operatorService.create(request));
     }
 
     @GetMapping("/{id}")
@@ -82,8 +81,12 @@ public class OperatorController {
 
     @GetMapping("/exists")
     @PreAuthorize("hasAnyRole('USER', 'OPERATOR', 'ADMIN')")
-    public ResponseEntity<Boolean> existsByName(@RequestParam String name, @RequestParam(defaultValue = "false") boolean ignoreCase) {
-        return ResponseEntity.ok(ignoreCase ? operatorService.existsByNameIgnoreCase(name) : operatorService.existsByName(name));
+    public ResponseEntity<Boolean> existsByName(@RequestParam String name,
+            @RequestParam(defaultValue = "false") boolean ignoreCase) {
+        return ResponseEntity
+                .ok(ignoreCase
+                        ? operatorService.existsByNameIgnoreCase(name)
+                        : operatorService.existsByName(name));
     }
 
     @GetMapping
@@ -95,70 +98,77 @@ public class OperatorController {
 
     @PutMapping("/requests/plans/{planId}")
     @PreAuthorize("hasRole('OPERATOR')")
-    @Operation(
-            summary = "{api.operator.submitUpdatePlan.summary}",
-            description = "{api.operator.submitUpdatePlan.description}",
-            security = @SecurityRequirement(name = "bearerAuth")
-    )
-    public ResponseEntity<ChangeRequestResponse>
-    submitUpdatePlan(@PathVariable Long planId, @Valid @RequestBody UpdatePlanChangeRequest dto, Authentication auth) {
-        UpdatePlanChangeRequest payload = new UpdatePlanChangeRequest(
-                planId,
-                dto.kind(),
-                dto.name(),
-                dto.price(),
-                dto.status(),
-                dto.uploadSpeedMbps(),
-                dto.downloadSpeedMbps(),
-                dto.networkGeneration(),
-                dto.dataLimitGb(),
-                dto.callCostPerMinute(),
-                dto.smsCostPerMessage()
-        );
-        return ResponseEntity.status(HttpStatus.CREATED).body(changeRequestService.submitUpdatePlan(payload, auth.getName()));
+    @Operation(summary = "{api.operator.submitUpdatePlan.summary}", description = "{api.operator.submitUpdatePlan.description}", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<ChangeRequestResponse> submitUpdatePlan(@PathVariable Long planId,
+            @Valid @RequestBody PlanChangeRequest dto, Authentication auth) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(requestService.submitPlan(
+                        new PlanChangeRequest(
+                                dto.action(),
+                                planId,
+                                dto.kind(),
+                                dto.name(),
+                                dto.price(),
+                                dto.status(),
+                                dto.uploadSpeedMbps(),
+                                dto.downloadSpeedMbps(),
+                                dto.networkGeneration(),
+                                dto.dataLimitGb(),
+                                dto.callCostPerMinute(),
+                                dto.smsCostPerMessage(),
+                                dto.coverage(),
+                                dto.MHz()),
+                        auth.getName()));
     }
 
     @DeleteMapping("/requests/plans/{planId}")
     @PreAuthorize("hasRole('OPERATOR')")
-    @Operation(
-            summary = "{api.operator.submitDeletePlan.summary}",
-            description = "{api.operator.submitDeletePlan.description}",
-            security = @SecurityRequirement(name = "bearerAuth")
-    )
-    public ResponseEntity<ChangeRequestResponse>
-    submitDeletePlan(@PathVariable Long planId, Authentication auth) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(changeRequestService.submitDeletePlan(new DeletePlanChangeRequest(planId), auth.getName()));
+    @Operation(summary = "{api.operator.submitDeletePlan.summary}", description = "{api.operator.submitDeletePlan.description}", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<ChangeRequestResponse> submitDeletePlan(@PathVariable Long planId, Authentication auth) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(requestService.submitPlan(
+                        new PlanChangeRequest(
+                                ActionType.DELETE,
+                                planId,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null),
+                        auth.getName()));
     }
 
     @PutMapping("/requests/operator/{operatorId}")
     @PreAuthorize("hasRole('OPERATOR')")
-    @Operation(
-            summary = "{api.operator.submitUpdateOperator.summary}",
-            description = "{api.operator.submitUpdateOperator.description}",
-            security = @SecurityRequirement(name = "bearerAuth")
-    )
-    public ResponseEntity<ChangeRequestResponse>
-    submitUpdateOperator(@PathVariable Long operatorId, @Valid @RequestBody UpdateOperatorChangeRequest dto, Authentication auth) {
-        UpdateOperatorChangeRequest payload = new UpdateOperatorChangeRequest(operatorId, dto.newName());
-        return ResponseEntity.status(HttpStatus.CREATED).body(changeRequestService.submitUpdateOperator(payload, auth.getName()));
+    @Operation(summary = "{api.operator.submitUpdateOperator.summary}", description = "{api.operator.submitUpdateOperator.description}", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<ChangeRequestResponse> submitUpdateOperator(@PathVariable Long operatorId,
+            @Valid @RequestBody OperatorChangeRequest dto, Authentication auth) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(requestService.submitOperator(
+                        new OperatorChangeRequest(dto.action(), operatorId, dto.name(), dto.countryCode()),
+                        auth.getName()));
     }
 
     @PostMapping("/requests/subscriptions")
     @PreAuthorize("hasRole('OPERATOR')")
-    @Operation(
-            summary = "{api.operator.submitCreateSubscription.summary}",
-            description = "{api.operator.submitCreateSubscription.description}",
-            security = @SecurityRequirement(name = "bearerAuth")
-    )
-    public ResponseEntity<ChangeRequestResponse>
-    submitCreateSubscription(@Valid @RequestBody CreateSubscriptionChangeRequest dto, Authentication auth) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(changeRequestService.submitCreateSubscription(dto, auth.getName()));
+    @Operation(summary = "{api.operator.submitCreateSubscription.summary}", description = "{api.operator.submitCreateSubscription.description}", security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<ChangeRequestResponse> submitCreateSubscription(
+            @Valid @RequestBody SubscriptionChangeRequest dto, Authentication auth) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(requestService.submitSubscription(dto, auth.getName()));
     }
 
     @GetMapping("/requests/mine")
     @PreAuthorize("hasRole('OPERATOR')")
     @Operation(summary = "{api.operator.getMyRequests.summary}", description = "{api.operator.getMyRequests.description}", security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<List<ChangeRequestResponse>> getMyRequests(Authentication auth) {
-        return ResponseEntity.ok(changeRequestService.getMyRequests(auth.getName()));
+        return ResponseEntity.ok(requestService.getMyRequests(auth.getName()));
     }
 }

@@ -17,10 +17,7 @@ import se.lexicon.subscriptionapi.dto.response.UserResponse;
 import se.lexicon.subscriptionapi.service.UserService;
 
 @Tag(name = "Users", description = "User endpoints (public register; other endpoints require JWT).")
-@RestController
-@RequestMapping("/api/v1/Users")
-@RequiredArgsConstructor
-public class UserController {
+@RestController @RequestMapping("/api/v1/Users") @RequiredArgsConstructor public class UserController {
     private final UserService user;
 
     @PostMapping

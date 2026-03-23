@@ -8,14 +8,17 @@ import java.util.Set;
 import org.hibernate.annotations.CreationTimestamp;
 import se.lexicon.subscriptionapi.domain.constant.UserCredentials;
 
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "users")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "user_type")
 public abstract class User {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true)
@@ -39,7 +42,7 @@ public abstract class User {
     @Column(updatable = false)
     @CreationTimestamp
     private Instant writeInstant;
-    
+
     private Instant deleteInstant;
 
     @Column(name = "last_login_instant")

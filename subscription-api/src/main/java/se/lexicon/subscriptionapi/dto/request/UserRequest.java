@@ -1,10 +1,11 @@
 package se.lexicon.subscriptionapi.dto.request;
 
 import jakarta.validation.constraints.*;
+import jakarta.validation.constraints.Size;
+import java.time.Instant;
 import lombok.ToString;
 import se.lexicon.subscriptionapi.domain.constant.UserCredentials;
 import se.lexicon.subscriptionapi.validation.UniqueEmail;
-
 
 public record UserRequest(
         @Positive(message = "{invalidId}") Long id,
@@ -20,9 +21,17 @@ public record UserRequest(
 
         @NotBlank(message = "{blank}") @Size(min = 8, message = "{invalidLength}") @ToString.Exclude String password,
 
-        @NotBlank(message = "{blank}") String address,
+        Instant writeInstant,
 
-        @NotBlank(message = "{blank}") @Pattern(regexp = "^\\+?[0-9\\s-]{7,20}$", message = "{invalidNumber}") String phoneNumber,
+        @Future(message = "{invalidInstant}") Instant deleteInstant,
+
+        @PastOrPresent(message = "{invalidInstant}") Instant lastLoginInstant,
+
+        String lastLoginIp, // set server-side on login, not client-validated
+
+        @Size(max = 200, message = "{invalidLength}") String address,
+
+        @Pattern(regexp = "^\\+?[0-9\\s-]{7,20}$", message = "{invalidNumber}") String phoneNumber,
 
         String preferences
 ) {}

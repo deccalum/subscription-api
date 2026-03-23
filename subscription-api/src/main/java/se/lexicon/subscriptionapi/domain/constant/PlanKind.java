@@ -12,9 +12,11 @@ public enum PlanKind {
     SATELLITE(PlanSatellite::new);
 
     private final Supplier<Plan> factory;
+
     PlanKind(Supplier<Plan> factory) {
         this.factory = factory;
     }
+
     public Plan create() {
         return factory.get();
     }

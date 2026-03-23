@@ -8,10 +8,11 @@ import se.lexicon.subscriptionapi.domain.constant.PlanKind;
 import se.lexicon.subscriptionapi.domain.constant.PlanStatus;
 import se.lexicon.subscriptionapi.domain.entity.ChangeRequest;
 
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @Entity
-@DiscriminatorValue("CREATE_PLAN")
+@DiscriminatorValue("CREATE")
 public class CreatePlanRequest extends ChangeRequest {
 
     @Enumerated(EnumType.STRING)

@@ -16,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import se.lexicon.subscriptionapi.dto.request.LoginRequest;
 import se.lexicon.subscriptionapi.dto.request.UserRequest;
@@ -25,11 +24,7 @@ import se.lexicon.subscriptionapi.security.TokenBlacklistService;
 import se.lexicon.subscriptionapi.service.UserService;
 
 @Tag(name = "Auth", description = "Authentication endpoints (login/register public, logout requires token).")
-@RestController
-@RequestMapping("/api/v1/auth")
-@RequiredArgsConstructor
-@Slf4j
-public class AuthController {
+@RestController @RequestMapping("/api/v1/auth") @RequiredArgsConstructor @Slf4j public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
     private final UserService user;
@@ -39,9 +34,8 @@ public class AuthController {
     @SecurityRequirements
     @Operation(summary = "{api.auth.login.summary}", description = "{api.auth.login.description}")
     public ResponseEntity<Map<String, Object>> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password()));
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        Authentication authentication = authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password()));
 
         String jwt = tokenProvider.generateToken(authentication);
         Map<String, Object> body = new HashMap<>();

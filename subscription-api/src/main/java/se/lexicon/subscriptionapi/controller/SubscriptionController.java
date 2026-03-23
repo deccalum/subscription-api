@@ -47,7 +47,8 @@ public class SubscriptionController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('OPERATOR', 'ADMIN')")
     @Operation(summary = "{api.subscription.update.summary}", description = "{api.subscription.update.description}", security = @SecurityRequirement(name = "bearerAuth"))
-    public ResponseEntity<SubscriptionResponse> update(@PathVariable Long id, @Valid @RequestBody SubscriptionRequest request) {
+    public ResponseEntity<SubscriptionResponse> update(@PathVariable Long id,
+            @Valid @RequestBody SubscriptionRequest request) {
         return ResponseEntity.ok(subscription.update(id, request));
     }
 
@@ -81,7 +82,8 @@ public class SubscriptionController {
 
     @GetMapping("/user/{userId}/status")
     @PreAuthorize("hasAnyRole('USER', 'OPERATOR', 'ADMIN')")
-    public ResponseEntity<List<SubscriptionResponse>> findByUserIdAndStatus(@PathVariable Long userId, @RequestParam SubscriptionStatus status) {
+    public ResponseEntity<List<SubscriptionResponse>> findByUserIdAndStatus(@PathVariable Long userId,
+            @RequestParam SubscriptionStatus status) {
         return ResponseEntity.ok(subscription.findByUserIdAndStatus(userId, status));
     }
 

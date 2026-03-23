@@ -4,7 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import se.lexicon.subscriptionapi.domain.entity.ChangeRequest;
 
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @Entity
 @DiscriminatorValue("CREATE_SUBSCRIPTION")

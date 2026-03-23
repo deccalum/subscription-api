@@ -1,158 +1,192 @@
 package se.lexicon.subscriptionapi.mapper;
 
-import org.mapstruct.*;
+import java.util.Optional;
+import org.springframework.stereotype.Component;
 import se.lexicon.subscriptionapi.domain.constant.RequestStatus;
+import se.lexicon.subscriptionapi.domain.constant.SubscriptionStatus;
 import se.lexicon.subscriptionapi.domain.entity.ChangeRequest;
-import se.lexicon.subscriptionapi.domain.entity.request.*;
+import se.lexicon.subscriptionapi.domain.entity.request.CreatePlanRequest;
+import se.lexicon.subscriptionapi.domain.entity.request.CreateSubscriptionRequest;
+import se.lexicon.subscriptionapi.domain.entity.request.DeletePlanRequest;
+import se.lexicon.subscriptionapi.domain.entity.request.UpdateOperatorRequest;
+import se.lexicon.subscriptionapi.domain.entity.request.UpdatePlanRequest;
 import se.lexicon.subscriptionapi.domain.entity.user.UserAdmin;
 import se.lexicon.subscriptionapi.domain.entity.user.UserOperator;
-import se.lexicon.subscriptionapi.dto.request.*;
+import se.lexicon.subscriptionapi.dto.request.OperatorChangeRequest;
 import se.lexicon.subscriptionapi.dto.request.OperatorRequest;
+import se.lexicon.subscriptionapi.dto.request.PlanChangeRequest;
 import se.lexicon.subscriptionapi.dto.request.PlanRequest;
+import se.lexicon.subscriptionapi.dto.request.SubscriptionChangeRequest;
 import se.lexicon.subscriptionapi.dto.request.SubscriptionRequest;
 import se.lexicon.subscriptionapi.dto.response.ChangeRequestResponse;
 
-
-@Mapper(componentModel = "spring")
-public interface RequestMapper {
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "requestedBy", source = "operator")
-    @Mapping(target = "reviewedBy", ignore = true)
-    @Mapping(target = "status", ignore = true)
-    @Mapping(target = "rejectionReason", ignore = true)
-    @Mapping(target = "request_instant", ignore = true)
-    @Mapping(target = "review_instant", ignore = true)
-    @Mapping(target = "actionType", ignore = true)
-    @Mapping(target = "planKind", source = "dto.kind")
-    @Mapping(target = "planName", source = "dto.name")
-    @Mapping(target = "planPrice", source = "dto.price")
-    @Mapping(target = "planStatus", source = "dto.status")
-    CreatePlanRequest toCreatePlanRequest(CreatePlanChangeRequest dto, UserOperator operator);
-
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "requestedBy", source = "operator")
-    @Mapping(target = "reviewedBy", ignore = true)
-    @Mapping(target = "status", ignore = true)
-    @Mapping(target = "rejectionReason", ignore = true)
-    @Mapping(target = "request_instant", ignore = true)
-    @Mapping(target = "review_instant", ignore = true)
-    @Mapping(target = "actionType", ignore = true)
-    @Mapping(target = "targetPlanId", source = "dto.targetPlanId")
-    @Mapping(target = "planKind", source = "dto.kind")
-    @Mapping(target = "planName", source = "dto.name")
-    @Mapping(target = "planPrice", source = "dto.price")
-    @Mapping(target = "planStatus", source = "dto.status")
-    UpdatePlanRequest toUpdatePlanRequest(UpdatePlanChangeRequest dto, UserOperator operator);
-
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "requestedBy", source = "operator")
-    @Mapping(target = "reviewedBy", ignore = true)
-    @Mapping(target = "status", ignore = true)
-    @Mapping(target = "rejectionReason", ignore = true)
-    @Mapping(target = "request_instant", ignore = true)
-    @Mapping(target = "review_instant", ignore = true)
-    @Mapping(target = "actionType", ignore = true)
-    DeletePlanRequest toDeletePlanRequest(DeletePlanChangeRequest dto, UserOperator operator);
-
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "requestedBy", source = "operator")
-    @Mapping(target = "reviewedBy", ignore = true)
-    @Mapping(target = "status", ignore = true)
-    @Mapping(target = "rejectionReason", ignore = true)
-    @Mapping(target = "request_instant", ignore = true)
-    @Mapping(target = "review_instant", ignore = true)
-    @Mapping(target = "actionType", ignore = true)
-    @Mapping(target = "targetOperatorId", source = "dto.targetOperatorId")
-    @Mapping(target = "newOperatorName", source = "dto.newName")
-    UpdateOperatorRequest toUpdateOperatorRequest(UpdateOperatorChangeRequest dto, UserOperator operator);
-
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "requestedBy", source = "operator")
-    @Mapping(target = "reviewedBy", ignore = true)
-    @Mapping(target = "status", ignore = true)
-    @Mapping(target = "rejectionReason", ignore = true)
-    @Mapping(target = "request_instant", ignore = true)
-    @Mapping(target = "review_instant", ignore = true)
-    @Mapping(target = "actionType", ignore = true)
-    CreateSubscriptionRequest toCreateSubscriptionRequest(CreateSubscriptionChangeRequest dto, UserOperator operator);
-
-    @Mapping(target = "kind", source = "planKind")
-    @Mapping(target = "name", source = "planName")
-    @Mapping(target = "operator", source = "requestedBy.operator.id")
-    @Mapping(target = "price", source = "planPrice")
-    @Mapping(target = "status", source = "planStatus")
-    PlanRequest toPlanRequest(CreatePlanRequest request);
-
-    @Mapping(target = "kind", source = "planKind")
-    @Mapping(target = "name", source = "planName")
-    @Mapping(target = "operator", source = "requestedBy.operator.id")
-    @Mapping(target = "price", source = "planPrice")
-    @Mapping(target = "status", source = "planStatus")
-    PlanRequest toPlanRequest(UpdatePlanRequest request);
-
-    @Mapping(target = "operator", source = "targetOperatorId")
-    @Mapping(target = "name", source = "newOperatorName")
-    OperatorRequest toOperatorRequest(UpdateOperatorRequest request);
-
-    @Mapping(target = "operatorId", source = "requestedBy.operator.id")
-    @Mapping(target = "planId", source = "targetPlanId")
-    @Mapping(target = "userId", source = "targetUserId")
-    @Mapping(target = "status", constant = "ACTIVE")
-    SubscriptionRequest toSubscriptionRequest(CreateSubscriptionRequest request);
-
-    default ChangeRequest toApproved(ChangeRequest request, UserAdmin admin) {
-        request.setStatus(RequestStatus.APPROVED);
-        request.setReviewedBy(admin);
-        return request;
+@Component
+public class RequestMapper {
+    private static void baseValues(ChangeRequest entity, UserOperator operator) {
+        entity.setStatus(RequestStatus.PENDING.create());
+        entity.setRequestedBy(operator);
     }
 
-    default ChangeRequest toRejected(ChangeRequest request, String reason, UserAdmin admin) {
-        request.setStatus(RequestStatus.REJECTED);
-        request.setRejectionReason(reason);
-        request.setReviewedBy(admin);
-        return request;
+    // --- PlanChangeRequest → entity ---
+
+    public ChangeRequest toEntity(PlanChangeRequest request, UserOperator operator) {
+        return Optional.ofNullable(request)
+                .map(r -> {
+                    ChangeRequest entity = r.action().create();
+                    baseValues(entity, operator);
+                    populatePlan(r, entity);
+                    return entity;
+                })
+                .orElse(null);
     }
 
-    @BeanMapping(unmappedTargetPolicy = ReportingPolicy.IGNORE)
-    @SubclassMapping(source = CreatePlanRequest.class, target = ChangeRequestResponse.class)
-    @SubclassMapping(source = UpdatePlanRequest.class, target = ChangeRequestResponse.class)
-    @SubclassMapping(source = DeletePlanRequest.class, target = ChangeRequestResponse.class)
-    @SubclassMapping(source = UpdateOperatorRequest.class, target = ChangeRequestResponse.class)
-    @SubclassMapping(source = CreateSubscriptionRequest.class, target = ChangeRequestResponse.class)
-    ChangeRequestResponse toResponse(ChangeRequest request);
+    private static void populatePlan(PlanChangeRequest r, ChangeRequest entity) {
+        if (entity instanceof CreatePlanRequest e) {
+            e.setPlanKind(r.kind());
+            e.setPlanName(r.name());
+            e.setPlanPrice(r.price());
+            e.setPlanStatus(r.status());
+            e.setUploadSpeedMbps(r.uploadSpeedMbps());
+            e.setDownloadSpeedMbps(r.downloadSpeedMbps());
+            e.setNetworkGeneration(r.networkGeneration());
+            e.setDataLimitGb(r.dataLimitGb());
+            e.setCallCostPerMinute(r.callCostPerMinute());
+            e.setSmsCostPerMessage(r.smsCostPerMessage());
+        } else if (entity instanceof UpdatePlanRequest e) {
+            e.setTargetPlanId(r.planId());
+            e.setPlanKind(r.kind());
+            e.setPlanName(r.name());
+            e.setPlanPrice(r.price());
+            e.setPlanStatus(r.status());
+            e.setUploadSpeedMbps(r.uploadSpeedMbps());
+            e.setDownloadSpeedMbps(r.downloadSpeedMbps());
+            e.setNetworkGeneration(r.networkGeneration());
+            e.setDataLimitGb(r.dataLimitGb());
+            e.setCallCostPerMinute(r.callCostPerMinute());
+            e.setSmsCostPerMessage(r.smsCostPerMessage());
+        } else if (entity instanceof DeletePlanRequest e) {
+            e.setTargetPlanId(r.planId());
+        }
+    }
 
-    @BeanMapping(unmappedTargetPolicy = ReportingPolicy.IGNORE)
-    @Mapping(target = "requestedById", source = "requestedBy.id")
-    @Mapping(target = "requestedByEmail", source = "requestedBy.email")
-    @Mapping(target = "reviewedById", source = "reviewedBy.id")
-    @Mapping(target = "reviewedByEmail", source = "reviewedBy.email")
-    ChangeRequestResponse toResponse(CreatePlanRequest request);
+    // --- OperatorChangeRequest → entity ---
 
-    @BeanMapping(unmappedTargetPolicy = ReportingPolicy.IGNORE)
-    @Mapping(target = "requestedById", source = "requestedBy.id")
-    @Mapping(target = "requestedByEmail", source = "requestedBy.email")
-    @Mapping(target = "reviewedById", source = "reviewedBy.id")
-    @Mapping(target = "reviewedByEmail", source = "reviewedBy.email")
-    ChangeRequestResponse toResponse(UpdatePlanRequest request);
+    public ChangeRequest toEntity(OperatorChangeRequest request, UserOperator operator) {
+        return Optional.ofNullable(request)
+                .map(r -> {
+                    UpdateOperatorRequest entity = new UpdateOperatorRequest();
+                    baseValues(entity, operator);
+                    entity.setTargetOperatorId(r.operatorId());
+                    entity.setNewOperatorName(r.name());
+                    return (ChangeRequest) entity;
+                })
+                .orElse(null);
+    }
 
-    @BeanMapping(unmappedTargetPolicy = ReportingPolicy.IGNORE)
-    @Mapping(target = "requestedById", source = "requestedBy.id")
-    @Mapping(target = "requestedByEmail", source = "requestedBy.email")
-    @Mapping(target = "reviewedById", source = "reviewedBy.id")
-    @Mapping(target = "reviewedByEmail", source = "reviewedBy.email")
-    ChangeRequestResponse toResponse(DeletePlanRequest request);
+    // --- SubscriptionChangeRequest → entity ---
 
-    @BeanMapping(unmappedTargetPolicy = ReportingPolicy.IGNORE)
-    @Mapping(target = "requestedById", source = "requestedBy.id")
-    @Mapping(target = "requestedByEmail", source = "requestedBy.email")
-    @Mapping(target = "reviewedById", source = "reviewedBy.id")
-    @Mapping(target = "reviewedByEmail", source = "reviewedBy.email")
-    ChangeRequestResponse toResponse(UpdateOperatorRequest request);
+    public ChangeRequest toEntity(SubscriptionChangeRequest request, UserOperator operator) {
+        return Optional.ofNullable(request)
+                .map(r -> {
+                    CreateSubscriptionRequest entity = new CreateSubscriptionRequest();
+                    baseValues(entity, operator);
+                    entity.setTargetPlanId(r.planId());
+                    entity.setTargetUserId(r.userId());
+                    return (ChangeRequest) entity;
+                })
+                .orElse(null);
+    }
 
-    @BeanMapping(unmappedTargetPolicy = ReportingPolicy.IGNORE)
-    @Mapping(target = "requestedById", source = "requestedBy.id")
-    @Mapping(target = "requestedByEmail", source = "requestedBy.email")
-    @Mapping(target = "reviewedById", source = "reviewedBy.id")
-    @Mapping(target = "reviewedByEmail", source = "reviewedBy.email")
-    ChangeRequestResponse toResponse(CreateSubscriptionRequest request);
+    // --- Approval / Rejection ---
+
+    public ChangeRequest toApproved(ChangeRequest request, UserAdmin admin) {
+        return Optional.ofNullable(request)
+                .map(r -> {
+                    r.setStatus(RequestStatus.APPROVED.create());
+                    r.setReviewedBy(admin);
+                    return r;
+                })
+                .orElse(null);
+    }
+
+    public ChangeRequest toRejected(ChangeRequest request, String reason, UserAdmin admin) {
+        return Optional.ofNullable(request)
+                .map(r -> {
+                    r.setStatus(RequestStatus.REJECTED.create());
+                    r.setRejectionReason(reason);
+                    r.setReviewedBy(admin);
+                    return r;
+                })
+                .orElse(null);
+    }
+
+    // --- ChangeRequest entity → downstream request DTOs ---
+
+    public PlanRequest toPlanRequest(CreatePlanRequest r) {
+        return Optional.ofNullable(r)
+                .map(e
+                     -> new PlanRequest(
+                             e.getPlanKind(),
+                             e.getPlanName(),
+                             e.getRequestedBy().getOperator().getId(),
+                             e.getPlanPrice(),
+                             e.getPlanStatus(),
+                             e.getUploadSpeedMbps(),
+                             e.getDownloadSpeedMbps(),
+                             e.getDataLimitGb(),
+                             e.getCallCostPerMinute(),
+                             e.getSmsCostPerMessage(),
+                             e.getNetworkGeneration(),
+                             null,
+                             null
+                     ))
+                .orElse(null);
+    }
+
+    public PlanRequest toPlanRequest(UpdatePlanRequest r) {
+        return Optional.ofNullable(r)
+                .map(e
+                     -> new PlanRequest(
+                             e.getPlanKind(),
+                             e.getPlanName(),
+                             e.getRequestedBy().getOperator().getId(),
+                             e.getPlanPrice(),
+                             e.getPlanStatus(),
+                             e.getUploadSpeedMbps(),
+                             e.getDownloadSpeedMbps(),
+                             e.getDataLimitGb(),
+                             e.getCallCostPerMinute(),
+                             e.getSmsCostPerMessage(),
+                             e.getNetworkGeneration(),
+                             null,
+                             null
+                     ))
+                .orElse(null);
+    }
+
+    public OperatorRequest toOperatorRequest(UpdateOperatorRequest r) {
+        return Optional.ofNullable(r).map(e -> new OperatorRequest(null, e.getNewOperatorName(), null)).orElse(null);
+    }
+
+    public SubscriptionRequest toSubscriptionRequest(CreateSubscriptionRequest r) {
+        return Optional.ofNullable(r)
+                .map(e -> new SubscriptionRequest(e.getRequestedBy().getOperator().getId(), e.getTargetPlanId(), e.getTargetUserId(), SubscriptionStatus.ACTIVE))
+                .orElse(null);
+    }
+
+    // --- ChangeRequest → ChangeRequestResponse ---
+
+    public ChangeRequestResponse toResponse(ChangeRequest request) {
+        if (request instanceof CreatePlanRequest r)
+            return ChangeRequestResponse.forCreatePlan(r);
+        if (request instanceof UpdatePlanRequest r)
+            return ChangeRequestResponse.forUpdatePlan(r);
+        if (request instanceof DeletePlanRequest r)
+            return ChangeRequestResponse.forDeletePlan(r);
+        if (request instanceof UpdateOperatorRequest r)
+            return ChangeRequestResponse.forUpdateOperator(r);
+        if (request instanceof CreateSubscriptionRequest r)
+            return ChangeRequestResponse.forCreateSubscription(r);
+        return null;
+    }
 }

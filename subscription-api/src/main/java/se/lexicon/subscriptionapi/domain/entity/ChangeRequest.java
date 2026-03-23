@@ -5,24 +5,26 @@ import java.time.Instant;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import se.lexicon.subscriptionapi.domain.constant.RequestActionType;
+import se.lexicon.subscriptionapi.domain.constant.ActionType;
 import se.lexicon.subscriptionapi.domain.constant.RequestStatus;
 import se.lexicon.subscriptionapi.domain.entity.user.UserAdmin;
 import se.lexicon.subscriptionapi.domain.entity.user.UserOperator;
 
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @Entity
 @Table(name = "change_requests")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "action_type", discriminatorType = DiscriminatorType.STRING)
 public abstract class ChangeRequest {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "action_type", insertable = false, updatable = false)
-    private RequestActionType actionType;
+    private ActionType actionType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requested_by_id", nullable = false)
@@ -42,7 +44,7 @@ public abstract class ChangeRequest {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private RequestStatus status = RequestStatus.PENDING;
+    private RequestStatus status;
 
     @Column(length = 500)
     private String rejectionReason;

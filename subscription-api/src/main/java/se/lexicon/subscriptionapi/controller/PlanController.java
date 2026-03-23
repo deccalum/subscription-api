@@ -77,13 +77,15 @@ public class PlanController {
 
     @GetMapping("/price")
     @PreAuthorize("hasAnyRole('USER', 'OPERATOR', 'ADMIN')")
-    public ResponseEntity<java.util.List<PlanResponse>> getByPriceBetween(@RequestParam java.math.BigDecimal min, @RequestParam java.math.BigDecimal max) {
+    public ResponseEntity<java.util.List<PlanResponse>> getByPriceBetween(@RequestParam java.math.BigDecimal min,
+            @RequestParam java.math.BigDecimal max) {
         return ResponseEntity.ok(plan.findByPriceBetween(min, max));
     }
 
     @GetMapping("/status")
     @PreAuthorize("hasAnyRole('USER', 'OPERATOR', 'ADMIN')")
-    public ResponseEntity<java.util.List<PlanResponse>> getByStatus(@RequestParam se.lexicon.subscriptionapi.domain.constant.PlanStatus status) {
+    public ResponseEntity<java.util.List<PlanResponse>> getByStatus(
+            @RequestParam se.lexicon.subscriptionapi.domain.constant.PlanStatus status) {
         return ResponseEntity.ok(plan.findByStatus(status));
     }
 
@@ -95,7 +97,8 @@ public class PlanController {
 
     @GetMapping("/count/operator/{operatorId}/status")
     @PreAuthorize("hasAnyRole('USER', 'OPERATOR', 'ADMIN')")
-    public ResponseEntity<Long> countByOperatorAndStatus(@PathVariable Long operatorId, @RequestParam se.lexicon.subscriptionapi.domain.constant.PlanStatus status) {
+    public ResponseEntity<Long> countByOperatorAndStatus(@PathVariable Long operatorId,
+            @RequestParam se.lexicon.subscriptionapi.domain.constant.PlanStatus status) {
         return ResponseEntity.ok(plan.countByOperatorIdAndStatus(operatorId, status));
     }
 

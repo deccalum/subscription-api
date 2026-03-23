@@ -1,28 +1,39 @@
 package se.lexicon.subscriptionapi.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-
-import se.lexicon.subscriptionapi.domain.entity.User;
+import java.util.Optional;
+import org.springframework.stereotype.Component;
 import se.lexicon.subscriptionapi.domain.entity.Plan;
 import se.lexicon.subscriptionapi.domain.entity.Subscription;
+import se.lexicon.subscriptionapi.domain.entity.User;
 import se.lexicon.subscriptionapi.dto.request.SubscriptionRequest;
 import se.lexicon.subscriptionapi.dto.response.SubscriptionResponse;
 
-@Mapper(componentModel = "spring")
-public interface SubscriptionMapper {
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "plan", source = "plan")
-    @Mapping(target = "user", source = "user")
-    @Mapping(target = "status", source = "request.status")
-    @Mapping(target = "writeInstant", ignore = true)
-    @Mapping(target = "cancelInstant", ignore = true)
-    Subscription toEntity(SubscriptionRequest request, Plan plan, User user);
+@Component
+public class SubscriptionMapper {
 
-    @Mapping(target = "userId", source = "user.id")
-    @Mapping(target = "planId", source = "plan.id")
-    @Mapping(target = "planName", source = "plan.name")
-    @Mapping(target = "planPrice", source = "plan.price")
-    @Mapping(target = "operatorId", source = "plan.operator.id")
-    SubscriptionResponse toResponse(Subscription subscription);
+    public Subscription toEntity(SubscriptionRequest request, Plan plan, User user) {
+        return Optional.ofNullable(request)
+                .map(r -> Subscription.builder()
+                        .status(r.status())
+                        .plan(plan)
+                        .user(user)
+                        .build())
+                .orElse(null);
+    }
+
+    public SubscriptionResponse toResponse(Subscription subscription) {
+        return Optional.ofNullable(subscription)
+                .map(s -> new SubscriptionResponse(
+                    s.getId(),
+                    s.getUser().getId(),
+                    null, 
+                    null, 
+                    null, 
+                    null, 
+                    s.getStatus(),
+                    s.getWriteInstant(),
+                    s.getCancelInstant()
+                ))
+                .orElse(null);
+    }
 }

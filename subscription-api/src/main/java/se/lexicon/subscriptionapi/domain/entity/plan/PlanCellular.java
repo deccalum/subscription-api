@@ -6,8 +6,10 @@ import java.math.BigDecimal;
 import se.lexicon.subscriptionapi.domain.constant.NetworkGeneration;
 import se.lexicon.subscriptionapi.domain.entity.Plan;
 
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @DiscriminatorValue("CELLULAR")
 public class PlanCellular extends Plan {

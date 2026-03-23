@@ -2,12 +2,11 @@ package se.lexicon.subscriptionapi.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-
 import se.lexicon.subscriptionapi.domain.constant.SubscriptionStatus;
 
 public record SubscriptionRequest(
         @NotNull(message = "{required}") 
-        @Positive(message = "{invalidId}")
+        @Positive(message = "{invalidId}") 
         Long operatorId,
 
         @NotNull(message = "{required}") 

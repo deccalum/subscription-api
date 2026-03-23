@@ -7,17 +7,25 @@ import java.util.Set;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "operators")
 public class Operator {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true)
     private String name;
 
+    @Column(nullable = false, length = 2)
+    private String countryCode;
+
+    @Builder.Default
     @OneToMany(mappedBy = "operator", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Plan> plans = new HashSet<>();
 

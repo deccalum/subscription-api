@@ -8,10 +8,11 @@ import se.lexicon.subscriptionapi.domain.constant.PlanKind;
 import se.lexicon.subscriptionapi.domain.constant.PlanStatus;
 import se.lexicon.subscriptionapi.domain.entity.ChangeRequest;
 
-@Getter @Setter
+@Getter
+@Setter
 @NoArgsConstructor
 @Entity
-@DiscriminatorValue("UPDATE_PLAN")
+@DiscriminatorValue("UPDATE")
 public class UpdatePlanRequest extends ChangeRequest {
 
     private Long targetPlanId;

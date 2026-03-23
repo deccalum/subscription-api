@@ -26,9 +26,13 @@ public class TokenBlacklistServiceImpl implements TokenBlacklistService {
             log.info("Token blacklisting is disabled. Skipping Redis storage.");
             return;
         }
-        log.info("Blacklisting token with prefix: {}", BLACKLIST_PREFIX);
-        redisTemplate.opsForValue().set(BLACKLIST_PREFIX + token, "true", expiration);
-        log.info("Token successfully stored in Redis with TTL: {}", expiration);
+        try {
+            log.info("Blacklisting token with prefix: {}", BLACKLIST_PREFIX);
+            redisTemplate.opsForValue().set(BLACKLIST_PREFIX + token, "true", expiration);
+            log.info("Token successfully stored in Redis with TTL: {}", expiration);
+        } catch (Exception ex) {
+            log.warn("Skipping token blacklist storage due to Redis error: {}", ex.getMessage());
+        }
     }
 
     @Override
@@ -36,10 +40,16 @@ public class TokenBlacklistServiceImpl implements TokenBlacklistService {
         if (!isEnabled) {
             return false;
         }
-        boolean blacklisted = Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX + token));
-        if (blacklisted) {
-            log.info("Token found in blacklist");
+        try {
+            boolean blacklisted = Boolean.TRUE.equals(redisTemplate.hasKey(BLACKLIST_PREFIX + token));
+            if (blacklisted) {
+                log.info("Token found in blacklist");
+            }
+            return blacklisted;
+        } catch (Exception ex) {
+            // Fail-open to avoid denying all authenticated requests when Redis is unavailable.
+            log.warn("Redis unavailable during blacklist check; treating token as not blacklisted: {}", ex.getMessage());
+            return false;
         }
-        return blacklisted;
     }
 }
