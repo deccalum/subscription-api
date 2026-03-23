@@ -9,7 +9,6 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-
 @Documented
 @Constraint(validatedBy = UniqueEmailValidator.class)
 @Target({FIELD, PARAMETER})

@@ -1,6 +1,11 @@
 package se.lexicon.subscriptionapi.exception;
 
 import jakarta.validation.ConstraintViolationException;
+import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,23 +14,12 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.Instant;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
-        List<Map<String, String>> errors = ex.getBindingResult()
-                .getFieldErrors()
-                .stream()
-                .map(this::toFieldError)
-                .toList();
+        List<Map<String, String>> errors = ex.getBindingResult().getFieldErrors().stream().map(this::toFieldError).toList();
 
         log.warn("Validation failed:\n{}", formatErrors(errors));
 
@@ -41,16 +35,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<Map<String, Object>> handleConstraintViolation(ConstraintViolationException ex) {
         List<Map<String, String>> errors = ex.getConstraintViolations()
-                .stream()
-                .map(violation -> {
-                    Map<String, String> item = new LinkedHashMap<>();
-                    item.put("field", violation.getPropertyPath().toString());
-                    item.put("message", violation.getMessage());
-                    return item;
-                })
-                .toList();
+                                                   .stream()
+                                                   .map(violation -> {
+                                                       Map<String, String> item = new LinkedHashMap<>();
+                                                       item.put("field", violation.getPropertyPath().toString());
+                                                       item.put("message", violation.getMessage());
+                                                       return item;
+                                                   })
+                                                   .toList();
 
-            log.warn("Constraint violation:\n{}", formatErrors(errors));
+        log.warn("Constraint violation:\n{}", formatErrors(errors));
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("timestamp", Instant.now());
@@ -73,6 +67,12 @@ public class GlobalExceptionHandler {
         return buildSimpleError(HttpStatus.CONFLICT, ex.getMessage());
     }
 
+    @ExceptionHandler(InvalidRequestException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidRequest(InvalidRequestException ex) {
+        log.warn("Invalid request: {}", ex.getMessage());
+        return buildSimpleError(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
     private Map<String, String> toFieldError(FieldError fieldError) {
         Map<String, String> error = new LinkedHashMap<>();
         error.put("field", fieldError.getField());
@@ -81,9 +81,7 @@ public class GlobalExceptionHandler {
     }
 
     private String formatErrors(List<Map<String, String>> errors) {
-        return errors.stream()
-                .map(error -> String.format(" - %s: %s", error.get("field"), error.get("message")))
-                .collect(Collectors.joining(System.lineSeparator()));
+        return errors.stream().map(error -> String.format(" - %s: %s", error.get("field"), error.get("message"))).collect(Collectors.joining(System.lineSeparator()));
     }
 
     private ResponseEntity<Map<String, Object>> buildSimpleError(HttpStatus status, String message) {
